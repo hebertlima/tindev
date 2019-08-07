@@ -6,7 +6,7 @@ const DislikeController = require('./controllers/DislikeController');
 const routes = express.Router();
 
 routes.get('/', (request, response) => {
-    return response.json({ message: 'tests' });
+    return response.json({ api: 'TinDev 0.0.0' });
 });
 
 routes.get('/users', UserController.index);
