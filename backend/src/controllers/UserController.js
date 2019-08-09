@@ -15,7 +15,6 @@ module.exports = {
                 { _id: { $nin: loggedUser.dislikes } }
             ]
         });
-
         return response.json(users);
     },
     async store(request, response) {
@@ -23,12 +22,15 @@ module.exports = {
 
         const userExists = await User.findOne({ user: username });
 
-        if (userExists) return response.json(userExists);
+        if (userExists) {
+            console.log(`User ${userExists.name} Logged`);
+            return response.json(userExists);
+        }
 
         try {
             const res = await axios.get(gitHubApi + username);
 
-            const { name, bio, data, avatar_url: avatar } = res.data;
+            const { name, bio, avatar_url: avatar } = res.data;
 
             const user = await User.create({
                 name,

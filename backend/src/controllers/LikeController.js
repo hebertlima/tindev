@@ -11,12 +11,14 @@ module.exports = {
         if (!targetUser) return response.status(400).json({ error: 'Dev not exists!' });
 
         if (targetUser.likes.includes(user)) {
-            console.log('dev_math <3');
+            console.log(`<match> ${loggedUser.name} && ${targetUser.name} </match>`);
         }
 
         loggedUser.likes.push(targetUser._id);
 
         await loggedUser.save();
+
+        console.log(`${loggedUser.name} Like ${targetUser.name}`);
 
         return response.json(loggedUser);
     }

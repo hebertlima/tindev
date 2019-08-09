@@ -14,6 +14,8 @@ module.exports = {
 
         await loggedUser.save();
 
+        console.log(`${loggedUser.name} Dislike ${targetUser.name}`);
+
         return response.json(loggedUser);
     }
 }
