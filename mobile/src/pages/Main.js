@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-navigation';
 import { View, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import io from 'socket.io-client';
 
 import AsyncStorage from '@react-native-community/async-storage';
 
 import api from '../services/api';
-
 import Swiper from 'react-native-deck-swiper';
 
 import logo from '../assets/logo.png';
+import itsmatch from '../assets/itsamatch.png';
 
 export default function Main({ navigation }) {
     const loggedUserId = navigation.getParam('id');
-
     const [users, setUsers] = useState([]);
+    const [matchUser, setMatchUser] = useState();
 
     useEffect(() => {
         async function loadUsers() {
@@ -29,24 +30,35 @@ export default function Main({ navigation }) {
         loadUsers();
     }, [loggedUserId]);
 
+    useEffect(() => {
+        const socket = io('http://localhost:3333', {
+            query: { user: loggedUserId }
+        });
+
+        socket.on('match', user => {
+            setMatchUser(user);
+        });
+
+    }, [loggedUserId]);
+
     async function handleLike() {
-        // const [user, ... rest] = users;
+        const [user, ...rest] = users;
 
-        // await api.post(`/users/${user._id}/likes`, null, {
-        //     headers: { user: loggedUserId }
-        // });
+        await api.post(`/users/${user._id}/likes`, null, {
+            headers: { user: loggedUserId }
+        });
 
-        // setUsers(rest);
+        setUsers(rest);
     }
 
     async function handleDislike() {
-        // const [user, ... rest] = users;
+        const [user, ...rest] = users;
 
-        // await api.post(`/users/${user._id}/dislikes`, null, {
-        //     headers: { user: loggedUserId }
-        // });
+        await api.post(`/users/${user._id}/dislikes`, null, {
+            headers: { user: loggedUserId }
+        });
 
-        // setUsers(rest);
+        setUsers(rest);
     }
 
     async function handleLoggout() {
@@ -55,7 +67,12 @@ export default function Main({ navigation }) {
         navigation.navigate('Login');
     }
 
-    renderCard = (user, index) => {        
+    renderCard = (user, index) => {
+        if (!user) return (
+            <View style={styles.cardsContainer}>
+                <Text style={styles.empty}> Acabou :( </Text>
+            </View>
+        );
         return (
             <View style={[styles.myCard, { zIndex: users.length - index }]}>
                 <Image style={styles.avatar} source={{ uri: user.avatar }} />
@@ -91,6 +108,21 @@ export default function Main({ navigation }) {
                         />
                     )}
             </View>
+            {matchUser && (
+                <View style={styles.matchContainer}>
+                    <Image style={styles.matchImage} source={itsmatch}></Image>
+
+                    <Image style={styles.matchAvatar} source={{ uri: matchUser.avatar }}></Image>
+
+                    <Text style={styles.matchName}>{matchUser.name}</Text>
+                    <Text style={styles.matchBio}>{matchUser.bio}</Text>
+
+                    <TouchableOpacity style={styles.matchButton} onPress={() => setMatchUser(null)}>
+                        <Text style={styles.matchTextButton}>fechar</Text>
+                    </TouchableOpacity>
+
+                </View>
+            )}
         </SafeAreaView >
     );
 }
@@ -150,6 +182,47 @@ const styles = StyleSheet.create({
     },
     card: {
         marginTop: -60,
-        backgroundColor: 'transparent'        
+        backgroundColor: 'transparent'
+    },
+    matchContainer: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    matchAvatar: {
+        width: 160,
+        height: 160,
+        borderRadius: 80,
+        borderWidth: 5,
+        borderColor: '#fff',
+        marginVertical: 30,
+    },
+    matchName: {
+        fontSize: 26,
+        fontWeight: '700',
+        color: '#fff'
+    },
+    matchImage: {
+        height: 60,
+        resizeMode: 'contain'
+    },
+    matchBio: {
+        marginTop: 10,
+        fontSize: 16,
+        color: 'rgba(255, 255, 255, 0.8)',
+        lineHeight: 24,
+        textAlign: 'center',
+        paddingHorizontal: 30
+    },
+    matchButton: {        
+        color: 'rgba(255, 255, 255, 0.8)',
+        textAlign: 'center',
+        marginTop: 30,        
+    },
+    matchTextButton: {
+        fontSize: 16,
+        color: 'rgba(255, 255, 255, 0.8)',
+        fontWeight: '700'
     }
 });

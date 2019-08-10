@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import io from 'socket.io-client';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 
 import logo from '../assets/logo.svg';
 import dislike from '../assets/dislike.svg';
 import like from '../assets/like.svg';
+import itsmatch from '../assets/itsamatch.png';
 
 import './main.css';
 
 export default function Main({ match }) {
-
     const [users, setUsers] = useState([]);
+    const [matchUser, setMatchUser] = useState(1);
 
     useEffect(() => {
         async function loadUsers() {
@@ -19,11 +21,20 @@ export default function Main({ match }) {
                     user: match.params.id
                 }
             })
-
             setUsers(response.data);
         }
-
         loadUsers();
+    }, [match.params.id]);
+
+    useEffect(() => {
+        const socket = io('http://localhost:3333', {
+            query: { user: match.params.id }
+        });
+
+        socket.on('match', user => {
+            setMatchUser(user);
+        });
+
     }, [match.params.id]);
 
     async function handleLike(id) {
@@ -70,6 +81,17 @@ export default function Main({ match }) {
             ) : (
                     <div className="empty">Acabou =(</div>
                 )}
+            {matchUser && (
+                <div className="match-container">
+                    <img src={itsmatch} alt="It's a match" />
+
+                    <img className="avatar" src={matchUser.avatar} alt={matchUser.name} />
+                    <strong>{matchUser.name}</strong>
+                    <p>{matchUser.bio}</p>
+
+                    <button type="button" onClick={() => setMatchUser(null)}>fechar</button>
+                </div>
+            )}
         </div>
     );
 }
