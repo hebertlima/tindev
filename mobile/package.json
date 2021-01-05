@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@react-native-community/async-storage": "react-native-community/async-storage",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "react": "16.8.6",
     "react-native": "0.60.4",
     "react-native-deck-swiper": "^1.6.7",
